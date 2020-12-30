@@ -132,13 +132,13 @@ int SQLFileSource::prepareWrite(IRowManipulator* row, unsigned int rowCount, uns
 		else {
 			strcpy(ptr, ",");
 			ptr += strlen(ptr);
-		}
-		strcpy(ptr, "\"");
-		ptr++;
+        }
+        strcpy(ptr, "[");
+        ptr += strlen(ptr);
 		strcpy(ptr, row->getColumnName(curCol));
-		ptr += strlen(ptr);
-		strcpy(ptr, "\"");
-		ptr++;
+        ptr += strlen(ptr);
+        strcpy(ptr, "]");
+        ptr += strlen(ptr);
 	}
 	strcpy(ptr, ") VALUES (");
 	ptr += strlen(ptr);
@@ -161,10 +161,10 @@ int SQLFileSource::createSQLTable() {
 
 		if(isFirstColumn)
 			isFirstColumn = 0;
-		else
+        else
 			fputc(',', outputFile);
 
-		fprintf(outputFile, "\n\t\"%s\" ", row->getColumnName(curCol));
+        fprintf(outputFile, "\n\t[%s] ", row->getColumnName(curCol));
 
 		char buffer[20];
 		sqlLanguage->getTypeName(buffer, row->getType(curCol), row->getMaxDataCount(curCol), row->getDataIndex(curCol));
@@ -210,19 +210,19 @@ int SQLFileSource::writeRow() {
 		switch(row->getType(curCol)) {
 			case TYPE_BIT:
 			case TYPE_INT8:
-				ptr += sprintf(ptr, "\'%d\'", *static_cast<char*>(buffer));
+                ptr += sprintf(ptr, "%d", *static_cast<char*>(buffer));
 				break;
 
 			case TYPE_INT16:
-				ptr += sprintf(ptr, "\'%d\'", *static_cast<short*>(buffer));
+                ptr += sprintf(ptr, "%d", *static_cast<short*>(buffer));
 				break;
 
 			case TYPE_INT32:
-				ptr += sprintf(ptr, "\'%d\'", *static_cast<int*>(buffer));
+                ptr += sprintf(ptr, "%d", *static_cast<int*>(buffer));
 				break;
 
 			case TYPE_INT64:
-				ptr += sprintf(ptr, "\'%I64d\'", *static_cast<long long int*>(buffer));
+                ptr += sprintf(ptr, "%I64d", *static_cast<long long int*>(buffer));
 				break;
 
 			case TYPE_CHAR: {
@@ -234,11 +234,11 @@ int SQLFileSource::writeRow() {
 			}
 
 			case TYPE_FLOAT32:
-				ptr += sprintf(ptr, "\'%e\'", *static_cast<float*>(buffer));
+                ptr += sprintf(ptr, "%f", *static_cast<float*>(buffer));
 				break;
 
 			case TYPE_FLOAT64:
-				ptr += sprintf(ptr, "\'%le\'", *static_cast<double*>(buffer));
+                ptr += sprintf(ptr, "%lf", *static_cast<double*>(buffer));
 				break;
 
 			case TYPE_NVARCHAR_STR:
@@ -248,10 +248,10 @@ int SQLFileSource::writeRow() {
 				if(sqlEscapedStr != buffer)
 					free(sqlEscapedStr);
 				break;
-			}
+            }
 
 			case TYPE_DECIMAL:
-				ptr += sprintf(ptr, "\'%lf\'", (double) (*(int*) buffer) / pow(10.0, row->getDataIndex(curCol)));
+                ptr += sprintf(ptr, "%lf", (double) (*(int*) buffer) / pow(10.0, row->getDataIndex(curCol)));
 				break;
 		}
 	}
